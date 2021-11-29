@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t louishochart/react-test -f ./client/Dockerfile.dev .
+
+script:
+  - docker run -e CI=true louishochart/react-test npm test
+
+after_success:
+  - docker build -t louishochart/docker-multi-complex-fibonacci-client ./client
+  - docker build -t louishochart/docker-multi-complex-fibonacci-nginx ./nginx
+  - docker build -t louishochart/docker-multi-complex-fibonacci-server ./server
+  - docker build -t louishochart/docker-multi-complex-fibonacci-worker ./worker
+
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+  - docker push louishochart/docker-multi-complex-fibonacci-client
+  - docker push louishochart/docker-multi-complex-fibonacci-nginx
+  - docker push louishochart/docker-multi-complex-fibonacci-server
+  - docker push louishochart/docker-multi-complex-fibonacci-worker
